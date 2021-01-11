@@ -24,3 +24,6 @@ To run the compiled program use:
 ./go_build_flowdaemon_go localhost localhost
 ```
 since the go-lang will compile the program to a single executable file.
+
+# Compiled executable file
+Provided executable file was compiled for linux with 386 architecture.
