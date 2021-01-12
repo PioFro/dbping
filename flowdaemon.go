@@ -66,27 +66,30 @@ func sendPingToAll(Destinations []string, ipSources []string, config influx.Batc
 			log.Fatal(err)
 		}
 		pinger.Count = 3
+		pinger.Timeout = time.Duration(1*time.Second)
 		err = pinger.Run() // Blocks until finished.
 		if err != nil {
 			log.Fatal(err)
 		}
 		stats := pinger.Statistics()
-		log.Println(stats)
-		log.Println(pinger.Source)
+		log.Println("Ping statistics" , stats)
+		if len(stats.Rtts)==0{
+			log.Println("Unable to reach the ",ip)
+		} else {
+			tags := make(map[string]string)
+			vals := make(map[string]interface{})
+			tags["src"] = strSrc
+			vals["sourceIP"] = strSrc
+			tags["dst"] = ip
+			vals["destinationIP"] = ip
+			vals["delay"] = float64(stats.AvgRtt.Milliseconds())
 
-		tags := make(map[string]string)
-		vals := make(map[string]interface{})
-		tags["src"]=strSrc
-		vals["sourceIP"] =strSrc
-		tags["dst"]=ip
-		vals["destinationIP"]=ip
-		vals["delay"]=float64(stats.AvgRtt.Milliseconds())
-
-		point,err := influx.NewPoint("delay",tags,vals,time.Now())
-		if err !=nil {
-			log.Fatal("Unable to create the point")
+			point, err := influx.NewPoint("delay", tags, vals, time.Now())
+			if err != nil {
+				log.Fatal("Unable to create the point")
+			}
+			batch.AddPoint(point)
 		}
-		batch.AddPoint(point)
 	}
 	return batch,nil
 }
@@ -185,7 +188,7 @@ func main() {
 	defer clientInflux.Close()
 	influxBPConfig := influx.BatchPointsConfig{Database: "dbping"}
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	done := make(chan bool)
 	go func() {
 		for {
