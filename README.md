@@ -21,7 +21,7 @@ There are two required commandline arguments - the order of the arguments is imp
 To run the compiled program use:
 
 ```bash
-./go_build_flowdaemon_go localhost localhost
+./dbping localhost localhost
 ```
 since the go-lang will compile the program to a single executable file.
 
